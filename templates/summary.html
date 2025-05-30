@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Construction Summary</title>
+</head>
+<body>
+    <h1>Construction Completed!</h1>
+    <h2>Floors Constructed:</h2>
+    <p>{{ constructed | join(', ') }}</p>
+
+    <h2>Remaining Inventory:</h2>
+    <ul>
+        {% for k, v in inventory.items() %}
+            <li>{{ k.replace('_', ' ').title() }}: {{ v }}</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <form action="{{ url_for('home') }}" method="GET">
+        <button type="submit">Start New Project</button>
+    </form>
+</body>
+</html>

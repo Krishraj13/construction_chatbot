@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Inventory Shortage</title>
+</head>
+<body>
+    <h1>Insufficient Inventory for Floor {{ floor }}</h1>
+    <p>Please add the missing quantities:</p>
+    <form method="POST">
+        {% for key, value in shortfall.items() %}
+            <label>{{ key.replace('_', ' ').title() }} (Short by {{ value }}):</label><br>
+            <input type="number" name="{{ key }}" required><br><br>
+        {% endfor %}
+        <input type="hidden" name="update_inventory" value="true">
+        <button type="submit">Update Inventory</button>
+    </form>
+</body>
+</html>

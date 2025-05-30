@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Floor Constructed</title>
+</head>
+<body>
+    <h1>Construction Completed for Floor {{ floor }}</h1>
+    <h2>Materials Used:</h2>
+    <ul>
+        {% for k, v in result.items() %}
+            <li>{{ k.replace('_', ' ').title() }}: {{ v }}</li>
+        {% endfor %}
+    </ul>
+    <br>
+    <form action="{{ url_for('floor_input') }}" method="GET">
+        <button type="submit">Construct Next Floor</button>
+    </form>
+    <form action="{{ url_for('summary') }}" method="GET">
+        <button type="submit">Finish Project</button>
+    </form>
+</body>
+</html>
