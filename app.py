@@ -1,16 +1,24 @@
 from flask import Flask, render_template, request, redirect, session, url_for
 import pandas as pd
 import numpy as np
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense
-from sklearn.compose import ColumnTransformer
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
-from sklearn.model_selection import train_test_split
+import joblib
+from tensorflow.keras.models import load_model
+
+# Set random seed for consistent behavior (optional)
+import os, random, tensorflow as tf
+os.environ['PYTHONHASHSEED'] = '42'
+np.random.seed(42)
+tf.random.set_seed(42)
+random.seed(42)
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 
-# Load dataset and train model
+# Load saved model and preprocessor
+model = load_model('model.h5')
+preprocessor = joblib.load('preprocessor.pkl')
+
+# Load dataset just for inventory averages
 df = pd.read_csv('construction.csv')
 drop_cols = ['project_id', 'location', 'sequence_id', 'estimated_cost_usd', 'materials_sufficient', 'shortfall_details']
 df.drop(columns=drop_cols, inplace=True)
@@ -27,29 +35,6 @@ target_cols = [
     'bricks_required', 'cement_bags_required', 'sand_tons_required',
     'steel_kg_required', 'labor_hours_required'
 ]
-
-X = df[feature_cols]
-y = df[target_cols]
-
-categorical = ['building_type', 'room_type']
-numeric = [col for col in feature_cols if col not in categorical]
-
-preprocessor = ColumnTransformer([
-    ('cat', OneHotEncoder(handle_unknown='ignore'), categorical),
-    ('num', StandardScaler(), numeric)
-])
-
-X_processed = preprocessor.fit_transform(X)
-X_train, X_test, y_train, y_test = train_test_split(X_processed, y.values, test_size=0.2, random_state=42)
-
-model = Sequential([
-    Dense(128, activation='relu', input_shape=(X_train.shape[1],)),
-    Dense(64, activation='relu'),
-    Dense(32, activation='relu'),
-    Dense(len(target_cols), activation='linear')
-])
-model.compile(optimizer='adam', loss='mse')
-model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=256, verbose=0)
 
 def clamp_predictions(preds):
     return np.clip(np.round(preds), 0, 1e7).astype(int)
@@ -104,12 +89,10 @@ def floor_input():
     constructed = session.get('constructed_floors', [])
     floor_cache = session.get('floor_cache', {})
 
-    # Stop further input if construction is complete
     if len(constructed) >= project['tf']:
         return redirect(url_for('summary'))
 
     if request.method == 'POST':
-        # Inventory update flow
         if 'update_inventory' in request.form:
             for key in inventory.keys():
                 add_qty = request.form.get(key)
@@ -120,11 +103,9 @@ def floor_input():
 
         floor = int(request.form['floor'])
 
-        # Validate floor number
         if floor in constructed or floor >= project['tf']:
             return render_template('floor.html', error="Invalid or already constructed floor", floor=None)
 
-        # Prediction flow
         if floor not in [0, project['tf'] - 1] and 'mid_floor' in floor_cache:
             result = floor_cache['mid_floor']
         else:
@@ -155,7 +136,6 @@ def floor_input():
 
         result = to_native(result)
 
-        # Check shortfall
         shortfall = {}
         for k in result:
             inv_k = 'inventory_' + k.split('_required')[0] + '_available'
@@ -165,7 +145,6 @@ def floor_input():
         if shortfall:
             return render_template('add_inventory.html', shortfall=shortfall, floor=floor)
 
-        # Deduct inventory
         for k in result:
             inv_k = 'inventory_' + k.split('_required')[0] + '_available'
             inventory[inv_k] -= result[k]
@@ -175,7 +154,6 @@ def floor_input():
         session['inventory'] = to_native(inventory)
         session['constructed_floors'] = to_native(constructed)
 
-        # Check again if all floors are done
         if len(constructed) >= project['tf']:
             return redirect(url_for('summary'))
 
@@ -187,10 +165,7 @@ def floor_input():
 def summary():
     constructed = to_native(session.get('constructed_floors', []))
     inventory = to_native(session.get('inventory', {}))
-
-    return render_template('summary.html',
-                           constructed=constructed,
-                           inventory=inventory)
+    return render_template('summary.html', constructed=constructed, inventory=inventory)
 
 if __name__ == '__main__':
     app.run(debug=True)

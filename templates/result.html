@@ -2,6 +2,59 @@
 <html>
 <head>
     <title>Floor Constructed</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f7;
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        ul {
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            list-style-type: none;
+        }
+
+        li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 16px;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+
+        button:hover {
+            background-color: #21618c;
+        }
+    </style>
 </head>
 <body>
     <h1>Construction Completed for Floor {{ floor }}</h1>
@@ -11,10 +64,11 @@
             <li>{{ k.replace('_', ' ').title() }}: {{ v }}</li>
         {% endfor %}
     </ul>
-    <br>
+
     <form action="{{ url_for('floor_input') }}" method="GET">
         <button type="submit">Construct Next Floor</button>
     </form>
+
     <form action="{{ url_for('summary') }}" method="GET">
         <button type="submit">Finish Project</button>
     </form>

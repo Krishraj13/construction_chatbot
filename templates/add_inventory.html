@@ -2,14 +2,73 @@
 <html>
 <head>
     <title>Inventory Shortage</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #c0392b;
+        }
+
+        p {
+            text-align: center;
+            font-size: 18px;
+            color: #333;
+        }
+
+        form {
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
+        }
+
+        button:hover {
+            background-color: #21618c;
+        }
+    </style>
 </head>
 <body>
     <h1>Insufficient Inventory for Floor {{ floor }}</h1>
     <p>Please add the missing quantities:</p>
     <form method="POST">
         {% for key, value in shortfall.items() %}
-            <label>{{ key.replace('_', ' ').title() }} (Short by {{ value }}):</label><br>
-            <input type="number" name="{{ key }}" required><br><br>
+            <label>{{ key.replace('_', ' ').title() }} (Short by {{ value }}):</label>
+            <input type="number" name="{{ key }}" required>
         {% endfor %}
         <input type="hidden" name="update_inventory" value="true">
         <button type="submit">Update Inventory</button>

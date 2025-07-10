@@ -9,12 +9,12 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from sklearn.metrics import mean_squared_error, r2_score
 
-# Globals for inventory and floors
+# Globals
 constructed_floors = set()
 floor_material_cache = {}
 
-# Feature and target columns
 feature_cols = [
     'building_type', 'room_type', 'total_plot_area_sqft', 'building_footprint_sqft',
     'floor_area_sqft', 'total_floors', 'floor_number',
@@ -27,12 +27,11 @@ target_cols = [
     'steel_kg_required', 'labor_hours_required'
 ]
 
-# Load dataset and prepare average inventory (used to reset inventory)
 def load_dataset():
     df = pd.read_csv('construction.csv')
     drop_cols = ['project_id', 'location', 'sequence_id', 'estimated_cost_usd', 'materials_sufficient', 'shortfall_details']
     df.drop(columns=drop_cols, inplace=True)
-    avg_inventory = df[[
+    avg_inventory = df[[  # Used for resetting
         'inventory_bricks_available', 'inventory_cement_bags_available',
         'inventory_sand_tons_available', 'inventory_steel_kg_available',
         'inventory_labor_hours_available'
@@ -60,19 +59,26 @@ def train_and_save_model(df):
         Dense(32, activation='relu'),
         Dense(len(target_cols), activation='linear')
     ])
-
     model.compile(optimizer='adam', loss='mse')
 
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=5, min_lr=1e-6)
     early_stop = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
 
-    model.fit(X_train, y_train, validation_data=(X_test, y_test), epochs=100, batch_size=256,
-              callbacks=[reduce_lr, early_stop], verbose=2)
+    model.fit(X_train, y_train, validation_data=(X_test, y_test),
+              epochs=100, batch_size=256, callbacks=[reduce_lr, early_stop], verbose=2)
 
-    # Save model and preprocessor
+    # 🔍 Evaluate and print accuracy
+    y_pred = model.predict(X_test)
+    mse = mean_squared_error(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    print("\n📊 Model Evaluation Metrics:")
+    print(f" - Mean Squared Error: {mse:.2f}")
+    print(f" - R² Score: {r2:.4f}")
+
+    # 💾 Save model and preprocessor
     model.save('model.h5')
     joblib.dump(preprocessor, 'preprocessor.pkl')
-    print("Model and preprocessor saved.")
+    print("✅ Model and preprocessor saved.\n")
 
 def load_model_and_preprocessor():
     model = load_model('model.h5')
@@ -229,6 +235,10 @@ def chatbot_loop(model, preprocessor, avg_inventory):
         for k, v in inventory.items():
             print(f" - {k}: {v}")
 
+        # Optional logging of results
+        log_df = pd.DataFrame([{'floor': f, **floor_mats[f]} for f in floors])
+        log_df.to_csv('floor_log.csv', mode='a', index=False, header=not os.path.exists('floor_log.csv'))
+
         next_f = max(constructed_floors) + 1
         if next_f < tf:
             cont = input(f"\n➡️ Construct next floor {next_f}? (yes/no): ").strip().lower()
@@ -239,10 +249,8 @@ def chatbot_loop(model, preprocessor, avg_inventory):
             break
 
 def main():
-    # Load dataset and avg inventory
     df, avg_inventory = load_dataset()
 
-    # Train model only if no saved files
     if not os.path.exists('model.h5') or not os.path.exists('preprocessor.pkl'):
         print("Training model since no saved model found...")
         train_and_save_model(df)

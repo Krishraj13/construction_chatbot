@@ -2,12 +2,65 @@
 <html>
 <head>
     <title>Enter Floor Number</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f7;
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+
+        form {
+            max-width: 500px;
+            margin: auto;
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: block;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #21618c;
+        }
+    </style>
 </head>
 <body>
     <h1>Enter Floor Number to Construct</h1>
     <form method="POST">
-        <label>Floor Number (e.g., 0 for Ground Floor):</label><br>
-        <input type="number" name="floor" required><br><br>
+        <label>Floor Number (e.g., 0 for Ground Floor):</label>
+        <input type="number" name="floor" required>
         <button type="submit">Construct Floor</button>
     </form>
 </body>

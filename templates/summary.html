@@ -2,9 +2,68 @@
 <html>
 <head>
     <title>Construction Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f4f6f7;
+            margin: 0;
+            padding: 40px;
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        p {
+            text-align: center;
+            font-size: 18px;
+            color: #34495e;
+        }
+
+        ul {
+            max-width: 500px;
+            margin: 20px auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            list-style-type: none;
+        }
+
+        li {
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 16px;
+        }
+
+        li:last-child {
+            border-bottom: none;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        button {
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #21618c;
+        }
+    </style>
 </head>
 <body>
     <h1>Construction Completed!</h1>
+
     <h2>Floors Constructed:</h2>
     <p>{{ constructed | join(', ') }}</p>
 
@@ -14,7 +73,7 @@
             <li>{{ k.replace('_', ' ').title() }}: {{ v }}</li>
         {% endfor %}
     </ul>
-    <br>
+
     <form action="{{ url_for('home') }}" method="GET">
         <button type="submit">Start New Project</button>
     </form>
